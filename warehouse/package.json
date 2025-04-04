@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.7.7",
+    "axios": "^1.8.4",
     "echarts": "^5.5.1",
-    "element-plus": "^2.8.3",
+    "element-plus": "^2.9.7",
+    "element-plus-x": "^1.1.1",
     "pubsub-js": "^1.9.4",
     "vue": "^3.4.37",
-    "vue-echarts": "^7.0.3"
+    "vue-echarts": "^7.0.3",
+    "vue-element-plus-x": "^1.0.8-beta"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.2",
