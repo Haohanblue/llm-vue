@@ -1,9 +1,7 @@
 <script setup lang="ts">
-
 import type { BubbleListProps,BubbleListItemProps } from 'vue-element-plus-x/types/components/BubbleList/types';
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-
 
 type listType = BubbleListItemProps & {
   key: number
@@ -11,7 +9,6 @@ type listType = BubbleListItemProps & {
 }
 
 const list = ref<listType[]>(generateFakeItems(1))
-
 
 function generateFakeItems(count: number): listType[] {
   const messages: listType[] = []
@@ -51,7 +48,6 @@ function generateFakeItems(count: number): listType[] {
 // 存储用户所有输入内容的全局变量
 const chatHistory = ref('')
 const senderRef = ref<{ clear: () => void } | null>(null)
-
 
 //输入框
 import { ref } from 'vue';
@@ -121,6 +117,17 @@ async function handleSubmit(value: string) {
   }
 }
 
+const listContainerRef = ref<HTMLElement | null>(null)
+function handleListClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  const text = target.innerText.trim()
+
+  const matched = list.value.find(item => item.content === text)
+  if (matched) {
+    list.value = list.value.filter(item => item.key !== matched.key)
+  }
+}
+
 
 </script>
 
@@ -131,14 +138,20 @@ async function handleSubmit(value: string) {
     <h1 style="text-align: center;"> 🤖金融小助手</h1>
 
     <!-- 对话列表 -->
-    <div style="display: flex; flex-direction: column; gap: 12px; background-color: #FFFFF0; height: 65vh; width: 97%; padding: 20px; border-radius: 8px;">
-      <BubbleList :list="list" max-height="100%"  />
+    <!-- 对话列表 -->
+    <div
+      style="display: flex; flex-direction: column; gap: 12px; background-color: #FFFFF0; height: 65vh; width: 97%; padding: 20px; border-radius: 8px;"
+      @click="handleListClick"
+      ref="listContainerRef"
+    >
+      <BubbleList :list="list" max-height="100%" />
     </div>
+
     
     <!-- 输入框 -->
     <div style="position: absolute; bottom: 40px; left: 200px; right: 150px;width:1000px;background-color: #FFFACD;">
         <Sender ref="senderRef" v-model="senderValue" :submit-type="activeName" :loading="senderLoading" @submit="handleSubmit" />
-      </div>
+    </div>
   </div>
   
 </template>
