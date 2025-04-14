@@ -2,7 +2,7 @@
 <template>
     <el-container>
     <el-header style="background-color: #409EFF; color: white; font-size: 24px;">
-      回测与公式管理应用
+      在线回测工具
     </el-header>
     <el-main style="padding: 24px">
       <!-- 用户输入表单 -->
@@ -18,13 +18,17 @@
             <el-col :span="8">
               <el-form-item
                 label="回测开始日期"
-                prop="START_DATE"
+                prop="start_date"
+
                 :rules="[{ required: true, message: '请输入回测开始日期', trigger: 'blur' }]"
               >
                 <el-date-picker
-                  v-model="form.START_DATE"
+
+                  v-model="form.start_date"
                   type="date"
                   placeholder="选择日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
                   style="width: 100%"
                 />
               </el-form-item>
@@ -32,13 +36,16 @@
             <el-col :span="8">
               <el-form-item
                 label="回测结束日期"
-                prop="END_DATE"
+                prop="end_date"
+
                 :rules="[{ required: true, message: '请输入回测结束日期', trigger: 'blur' }]"
               >
                 <el-date-picker
-                  v-model="form.END_DATE"
+                  v-model="form.end_date"
                   type="date"
                   placeholder="选择日期"
+                   format="YYYY-MM-DD"
+                  value-format="YYYY-MM-DD"
                   style="width: 100%"
                 />
               </el-form-item>
@@ -184,7 +191,30 @@
               </el-form-item>
             </el-col>
           </el-row>
-
+ <!-- 与大模型对话 -->
+ <el-card class="box-card" header="与大模型对话">
+      <el-form @submit.prevent="handleAsk" class="inline-form">
+        <el-form-item style="flex: 1;">
+          <el-input
+            v-model="question"
+            placeholder="请输入您的问题"
+            style="width: 100%;"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleAsk" :loading="askLoading">
+            询问
+          </el-button>
+        </el-form-item>
+      </el-form>
+      <el-divider />
+      <div v-if="llmAnswer">
+        <pre>{{ llmAnswer }}</pre>
+      </div>
+      <div v-if="llmExtractedJson">
+        <pre>{{ llmExtractedJson }}</pre>
+      </div>
+    </el-card>
           <!-- 公式部分 -->
           <el-divider />
           <el-row>
@@ -268,53 +298,16 @@
         </el-form>
       </el-card>
 
-      <el-space direction="vertical" size="large" style="width: 100%; margin-top: 24px;">
-        <!-- 回测结果表格 -->
-        <el-card class="box-card" header="回测结果">
-          <el-table
-            :data="resultData"
-            border
-            style="width: 100%"
-            :row-key="'key'"
-          >
-            <el-table-column prop="key" label="指标" width="150" />
-            <el-table-column prop="value" label="数值" />
-          </el-table>
+      <!-- 回测结果，回测之后才出现 -->
+      <el-card class="box-card" header="回测结果" v-if="result_url">
+        <iframe
+          :src="result_url"
+          style="width: 100%; height: 600px; border: none;"
+        />
         </el-card>
 
-        <!-- 回测结果图表 -->
-        <el-card class="box-card" header="策略与基准的累计收益对比">
-          <v-chart :option="chartOption" style="width: 100%; height: 400px;"></v-chart>
-        </el-card>
-
-        <!-- 与大模型对话 -->
-        <el-card class="box-card" header="与大模型对话">
-          <el-form @submit.prevent="handleAsk" class="inline-form">
-            <el-form-item style="flex: 1;">
-              <el-input
-                v-model="question"
-                placeholder="请输入您的问题"
-                style="width: 100%;"
-              />
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="handleAsk" :loading="askLoading">
-                询问
-              </el-button>
-            </el-form-item>
-          </el-form>
-          <el-divider />
-          <div v-if="llmAnswer">
-            <pre>{{ llmAnswer }}</pre>
-          </div>
-          <div v-if="llmExtractedJson">
-            <pre>{{ llmExtractedJson }}</pre>
-          </div>
-        </el-card>
-      </el-space>
     </el-main>
     <el-footer style="text-align: center;">
-      回测与公式管理应用 ©2024 Created by 您的名字
     </el-footer>
   </el-container>
 </template>
@@ -368,7 +361,7 @@ use([
 ]);
 
 export default {
-  name: 'App',
+  name: 'Huice',
   components: {
     ElContainer,
     ElHeader,
@@ -395,8 +388,11 @@ export default {
     const elForm = ref(null);
 
     const form = reactive({
-      START_DATE: '2020-01-01',
-      END_DATE: '2024-11-01',
+      // 获取当前的unix时间戳
+      stock_level: 0.8,
+      unix_time: Date.now(),
+      start_date: '2020-01-01',
+      end_date: '2024-11-01',
       ROTATION_DAYS: 20,
       NUM_STOCKS: 3,
       INITIAL_MONEY: 1000000,
@@ -406,49 +402,22 @@ export default {
       STOP_PROFIT: 0.4,
       STOP_LOSS: 0.2,
       STOCK_POOL_TYPE: '中证500', // 这里会被更新为新选项
+
       factor_list: [
-        'pe',
-        'pb',
-        'ps',
-        'rsi_hfq_6',
-        'vol',
-        'float_share',
-        'kdj_k_hfq',
-        'kdj_d_hfq',
-        'ema_hfq_5',
-        'ema_hfq_20',
-        'close_hfq',
-        'boll_mid_hfq',
-        'boll_upper_hfq',
-        'boll_lower_hfq',
-        'macd_hfq',
-        'macd_dif_hfq',
+      "brar_ar_hfq",
+      "brar_br_hfq",
+      "mtm_hfq"
       ],
-      formula:
-        '(-0.2*pe/(pe+pb+ps) + 0.3*rsi_hfq_6 - 0.5*vol/float_share + 0.4*(kdj_k_hfq-kdj_d_hfq)/(kdj_k_hfq+kdj_d_hfq) + 0.6*(ema_hfq_5-ema_hfq_20)/(ema_hfq_5+ema_hfq_20) + (close_hfq-boll_mid_hfq)/(boll_upper_hfq-boll_lower_hfq) + 0.5*macd_hfq/(macd_dif_hfq+1))/3',
-      pandas_formula:
-        "((-0.2*df['pe']/(df['pe'] + df['pb'] + df['ps']) + 0.3*df['rsi_hfq_6'] - 0.5*df['vol']/df['float_share'] + 0.4*(df['kdj_k_hfq'] - df['kdj_d_hfq'])/(df['kdj_k_hfq'] + df['kdj_d_hfq']) + 0.6*(df['ema_hfq_5'] - df['ema_hfq_20'])/(df['ema_hfq_5'] + df['ema_hfq_20']) + (df['close_hfq'] - df['boll_mid_hfq'])/(df['boll_upper_hfq'] - df['boll_lower_hfq']) + 0.5*df['macd_hfq']/(df['macd_dif_hfq'] + 1))/3)",
-      explanation:
-        '该公式结合多种属性的因子以提供一个多视角的选股工具，从估值、技术指标和市场情绪等方面评估股票的潜在收益能力。量化分析中处理了量纲一致性问题，使各因子可以互相比较，为超额Alpha策略提供支撑。',
+      formula: "情绪指标 + 动量指标",
+      pandas_formula: "(df['brar_ar_hfq'] + df['brar_br_hfq']) / 2 + df['mtm_hfq']",
+      explanation: "这个公式通过平均BRAR情绪指标的AR和BR值来衡量市场情绪，同时加上动量指标mtm_hfq来反映股票的动量状态，通过加法运算结合了两者，避免了乘法可能带来的误差放大问题。",
+
     });
 
     const availableFactors = [
-      'pe',
-      'pb',
-      'ps',
-      'rsi_hfq_6',
-      'vol',
-      'float_share',
-      'kdj_k_hfq',
-      'kdj_d_hfq',
-      'ema_hfq_5',
-      'ema_hfq_20',
-      'close_hfq',
-      'boll_mid_hfq',
-      'boll_upper_hfq',
-      'boll_lower_hfq',
-      'macd_hfq',
-      'macd_dif_hfq',
+      "brar_ar_hfq",
+      "brar_br_hfq",
+      "mtm_hfq"
     ];
 
     const loading = ref(false);
@@ -456,7 +425,7 @@ export default {
     const question = ref('');
     const llmAnswer = ref(null); // 显示 answer 文本
     const llmExtractedJson = ref(null); // 显示 extracted_json
-
+    const result_url = ref('');
     const tableColumns = [
       {
         label: '指标',
@@ -554,6 +523,14 @@ export default {
 
     const handleSubmit = async () => {
       // 验证表单
+      // 更改unix_time为当前时间戳
+      form.unix_time = Date.now();
+      form.formula_dict ={
+        factor_list : form.factor_list,
+        formula : form.formula,
+        pandas_formula : form.pandas_formula,
+        explanation : form.explanation,
+      }
       elForm.value.validate(async (valid) => {
         if (!valid) {
           ElMessage({
@@ -565,6 +542,7 @@ export default {
 
         loading.value = true;
         try {
+          console.log('提交的表单数据:', form);
           const response = await axios.post('/run', form);
           const data = response.data.data;
           // 假设返回的数据结构与描述一致
@@ -583,8 +561,11 @@ export default {
             strategy_returns_list_rounded,
             benchmark_returns_list_rounded,
             dates_list,
+            result_url: newResultUrl,
           } = data;
-
+          result_url.value = newResultUrl;
+          console.log('回测结果:', result_url.value);
+          ///
           // 更新表格数据
           resultData.value = [
             { key: '策略收益', value: strategy_return },
@@ -600,9 +581,9 @@ export default {
           ];
 
           // 更新图表数据
-          chartOption.value.xAxis.data = dates_list;
-          chartOption.value.series[0].data = strategy_returns_list_rounded;
-          chartOption.value.series[1].data = benchmark_returns_list_rounded;
+          // chartOption.value.xAxis.data = dates_list;
+          // chartOption.value.series[0].data = strategy_returns_list_rounded;
+          // chartOption.value.series[1].data = benchmark_returns_list_rounded;
 
           ElMessage({
             message: '回测成功！',
@@ -663,6 +644,7 @@ export default {
       elForm,
       form,
       loading,
+      result_url,
       handleSubmit,
       tableColumns,
       resultData,
