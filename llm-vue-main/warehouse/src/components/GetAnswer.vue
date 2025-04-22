@@ -56,12 +56,13 @@ const senderValue = ref('')
 const senderLoading = ref(false)
 
 // 发送用户输入
+// 发送用户输入
 async function handleSubmit(value: string) {
   senderLoading.value = true
   // 保存用户输入到聊天历史
   chatHistory.value += `用户：${value}\n`
   
- // 清空输入框（使用组件自身提供的方法）
+  // 清空输入框（使用组件自身提供的方法）
   senderRef.value.clear()
 
   // 添加用户消息到对话列表
@@ -80,11 +81,27 @@ async function handleSubmit(value: string) {
   }
   list.value.push(userMessage)
 
+  // 添加 AI 加载中状态的消息
+  const aiLoadingMessage: listType = {
+    key: list.value.length + 1,
+    role: 'ai',
+    placement: 'start',
+    content: '',
+    loading: true,  // 表示 AI 正在加载
+    shape: 'corner',
+    variant: 'filled',
+    isMarkdown: false,
+    typing: true,  // 开启打字效果
+    avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
+    avatarSize: '30px',
+  }
+  list.value.push(aiLoadingMessage)
+
   try {
     // 发送请求到后端
     const response = await axios.post('http://localhost:5000/chat', {
       question: value,
-      timeout:100000
+      timeout: 100000
     })
 
     // 获取后端智能回复
@@ -93,22 +110,12 @@ async function handleSubmit(value: string) {
     // 更新聊天记录
     chatHistory.value += `AI：${aiReply}\n`
 
-    // 添加 AI 回复到对话列表
-    const aiMessage: listType = {
-      key: list.value.length + 1,
-      role: 'ai',
-      placement: 'start',
-      content: aiReply,
-      loading: false,
-      shape: 'corner',
-      variant: 'filled',
-      isMarkdown: false,
-      typing: true, // 开启打字效果
-      avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-      avatarSize: '30px',
+    // 找到正在加载的 AI 消息并更新其内容
+    const aiMessageIndex = list.value.findIndex(item => item.loading && item.role === 'ai')
+    if (aiMessageIndex !== -1) {
+      list.value[aiMessageIndex].content = aiReply
+      list.value[aiMessageIndex].loading = false  // 隐藏加载状态
     }
-
-    list.value.push(aiMessage)
   } catch (error) {
     console.error('Error during API request:', error)
     ElMessage.error('请求失败，请稍后再试')
@@ -116,6 +123,7 @@ async function handleSubmit(value: string) {
     senderLoading.value = false
   }
 }
+
 
 const listContainerRef = ref<HTMLElement | null>(null)
 function handleListClick(event: MouseEvent) {
@@ -132,21 +140,21 @@ function handleListClick(event: MouseEvent) {
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column; gap: 12px; background: linear-gradient(to bottom, #3d83f4, #ede7ff); height: 94vh; width: 97%; padding: 20px; border-radius: 8px;">
-    
-    <h1 style="text-align: center;  color:#ffffff"> 🤖智能金融小助手</h1>
+  <div style="display: flex; flex-direction: column; gap: 12px; background: linear-gradient(to bottom, #3d83f4, #ede7ff); height: 94vh; width: 97%; padding: 20px; border-radius: 8px; position: relative;">
+    <h1 style="text-align: center; color: #ffffff"> 🤖智能金融小助手</h1>
 
     <!-- 对话列表 -->
     <div
-      style="display: flex; flex-direction: column; gap: 12px;background-color:aliceblue; height: 65vh; width: 97%; padding: 20px; border-radius: 8px;"
+      style="display: flex; flex-direction: column; gap: 12px; background-color: aliceblue; height: 65vh; width: 97%; padding: 20px; border-radius: 8px; overflow-y: auto;"
       @click="handleListClick"
       ref="listContainerRef"
     >
       <BubbleList :list="list" max-height="100%" />
     </div>
 
-    <!-- 输入框 -->
-    <div style="position: absolute; bottom: 40px; left: 200px; right: 150px; width: 1000px; background-color: #ffffff;">
+    <!-- 输入框 --> 
+    <!-- 把输入框外层 div 移到容器外部，设置 position: fixed，保持在页面底部 -->
+    <div style="position: fixed; bottom: 20px; left: 20px; right: 30px; width: calc(100% - 70px); background-color: #ffffff; padding: 10px; border-radius: 8px;">
         <Sender ref="senderRef" v-model="senderValue" :submit-type="activeName" :loading="senderLoading" @submit="handleSubmit" />
     </div>
   </div>

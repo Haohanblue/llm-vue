@@ -43,8 +43,8 @@
   .normal-navbar {
     background-color: #3d83f4;
     color: rgb(255, 255, 255);
-    height: 30px;
-    padding: 30px 0px;
+    height: 25px;
+    padding: 25px 0px;
     width: 100%;
   }
   
@@ -53,11 +53,11 @@
     position: fixed;
     top: 0;
     width: 100%;
-    height: 30px;
+    height: 25px;
     background-color: #ede7ff;
     color: rgb(255, 255, 255);
     z-index: 999;
-    padding: 30px 0px;
+    padding: 25px 0px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     animation: slideDown 0.3s ease;
   }
