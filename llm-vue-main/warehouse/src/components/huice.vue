@@ -1,9 +1,6 @@
 <!-- src/components/huice.vue -->
 <template>
     <el-container>
-    <el-header style="background-color: #409EFF; color: white; font-size: 24px;">
-      在线回测工具
-    </el-header>
     <el-main style="padding: 24px">
       <!-- 用户输入表单 -->
       <el-card class="box-card" header="回测参数与公式">
@@ -191,34 +188,14 @@
               </el-form-item>
             </el-col>
           </el-row>
- <!-- 与大模型对话 -->
- <el-card class="box-card" header="与大模型对话">
-      <el-form @submit.prevent="handleAsk" class="inline-form">
-        <el-form-item style="flex: 1;">
-          <el-input
-            v-model="question"
-            placeholder="请输入您的问题"
-            style="width: 100%;"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleAsk" :loading="askLoading">
-            询问
-          </el-button>
-        </el-form-item>
-      </el-form>
-      <el-divider />
-      <div v-if="llmAnswer">
-        <pre>{{ llmAnswer }}</pre>
-      </div>
-      <div v-if="llmExtractedJson">
-        <pre>{{ llmExtractedJson }}</pre>
-      </div>
-    </el-card>
+
+
           <!-- 公式部分 -->
           <el-divider />
+          
           <el-row>
             <el-col :span="24">
+              
               <el-form-item
                 label="因子列表"
                 prop="factor_list"
@@ -237,6 +214,9 @@
                     :value="factor"
                   />
                 </el-select>
+                 <!-- 与大模型对话 -->
+    <el-button type="primary" @click="openDialog" style="margin-top: 20px;margin-left:1100px;">AI生成</el-button>
+    <DialogComponent ref="dialogComponent" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -348,7 +328,7 @@ import {
 } from 'echarts/components';
 import { LineChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
-
+import DialogComponent from './DialogComponent.vue'
 
 // 注册需要的 ECharts 组件
 use([
@@ -383,6 +363,17 @@ export default {
     ElTableColumn,
     ElSpace,
     VChart,
+    DialogComponent
+  },
+  methods: {
+    openDialog() {
+      // 确保 DialogComponent 引用存在
+      console.log('DialogComponent Ref:', this.$refs.dialogComponent);
+      if (this.$refs.dialogComponent) {
+        // 如果 Ref 存在，调用 openDialog
+        this.$refs.dialogComponent.openDialog();
+      }
+    },
   },
   setup() {
     const elForm = ref(null);
@@ -670,7 +661,7 @@ body {
   margin-bottom: 20px;
 }
 .inline-form {
-  display: flex;
+
   width: 100%;
 }
 </style>

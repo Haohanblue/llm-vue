@@ -205,6 +205,7 @@
     right: 20px;  /* 设置图片距离右侧20px */
     width: 500px;  /* 设置图片宽度（根据需要调整） */
     height: auto;  /* 保持图片比例 */
+    animation: float-up-down 2s ease-in-out infinite; /* 上下浮动效果 */
   }
 
  
