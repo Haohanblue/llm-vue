@@ -136,27 +136,40 @@ function handleListClick(event: MouseEvent) {
   }
 }
 
-const params = {
-  common: {
-    channelType: 'ANONYMOUS_CUI_SDK',
-    resourceType: 'AILY_CUI_SDK',
-  }
-};
+// const params = {
+//   common: {
+//     channelType: 'ANONYMOUS_CUI_SDK',
+//     resourceType: 'AILY_CUI_SDK',
+//   }
+// };
 
-const stringParams = JSON.stringify(params);
-const configValue = btoa(stringParams);
-const iframeHost = 'https://ae.feishu.cn';
-const appKey = "a_59ef3bf486a141a8adfb7196375c13e6"; // 替换为你的真实 appKey
-const iframeUrl = ref(`${iframeHost}/cui#appkey=${appKey}&config=${configValue}`);
+// const stringParams = JSON.stringify(params);
+// const configValue = btoa(stringParams);
+// const iframeHost = 'https://ae.feishu.cn';
+// const appKey = "a_59ef3bf486a141a8adfb7196375c13e6"; // 替换为你的真实 appKey
+// const iframeUrl = ref(`${iframeHost}/cui#appkey=${appKey}&config=${configValue}`);
 </script>
 
 <template>
-  <h1 style="text-align: center; color: #ffffff"> 🤖智能金融小助手</h1>
-  <iframe 
-    :src="iframeUrl" 
-    frameborder="0"
-    style="width: 100%; height: 100vh;"
-  ></iframe>
+  <div style="display: flex; flex-direction: column; gap: 12px; background: linear-gradient(to bottom, #3d83f4, #ede7ff); height: 94vh; width: 97%; padding: 20px; border-radius: 8px; position: relative;">
+    
+    <h1 style="text-align: center; color: #ffffff"> 🤖智能金融小助手</h1>
+    <!-- 对话列表 -->
+    <div
+      style="display: flex; flex-direction: column; gap: 12px; background-color: aliceblue; height: 65vh; width: 97%; padding: 20px; border-radius: 8px; overflow-y: auto;"
+      @click="handleListClick"
+      ref="listContainerRef"
+    >
+      <BubbleList :list="list" max-height="100%" />
+    </div>
+    <!-- 输入框 --> 
+    <!-- 把输入框外层 div 移到容器外部，设置 position: fixed，保持在页面底部 -->
+    <div style="position: fixed; bottom: 20px; left: 20px; right: 30px; width: calc(100% - 70px); background-color: #ffffff; padding: 10px; border-radius: 8px;">
+        <Sender ref="senderRef" v-model="senderValue" :submit-type="activeName" :loading="senderLoading" @submit="handleSubmit" />
+    </div>
+  </div>
+ 
+
   <!-- 下面是原来的代码，暂时注释掉 -->
 </template>
 
