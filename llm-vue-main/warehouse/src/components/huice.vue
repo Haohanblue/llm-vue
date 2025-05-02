@@ -50,11 +50,11 @@
             <el-col :span="8">
               <el-form-item
                 label="轮动天数"
-                prop="ROTATION_DAYS"
+                prop="rotation_days"
                 :rules="[{ required: true, message: '请输入轮动天数', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.ROTATION_DAYS"
+                  v-model="form.rotation_days"
                   :min="1"
                   style="width: 100%"
                 />
@@ -66,11 +66,11 @@
             <el-col :span="8">
               <el-form-item
                 label="每次轮动选股数量"
-                prop="NUM_STOCKS"
-                :rules="[{ required: true, message: '请输入每次轮动选股数量', trigger: 'blur' }]"
+                prop="num_stocks"
+                :rules="[{ required: true, message: '请输入轮动选股数量', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.NUM_STOCKS"
+                  v-model="form.num_stocks"
                   :min="1"
                   style="width: 100%"
                 />
@@ -79,11 +79,11 @@
             <el-col :span="8">
               <el-form-item
                 label="初始资金"
-                prop="INITIAL_MONEY"
+                prop="initial_money"
                 :rules="[{ required: true, message: '请输入初始资金', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.INITIAL_MONEY"
+                  v-model="form.initial_money"
                   :min="0"
                   :formatter="formatMoney"
                   :parser="parseMoney"
@@ -94,11 +94,11 @@
             <el-col :span="8">
               <el-form-item
                 label="交易佣金比例"
-                prop="COMMISSION"
+                prop="commission"
                 :rules="[{ required: true, message: '请输入交易佣金比例', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.COMMISSION"
+                  v-model="form.commission"
                   :min="0"
                   step="0.00001"
                   style="width: 100%"
@@ -111,11 +111,11 @@
             <el-col :span="8">
               <el-form-item
                 label="交易税比例"
-                prop="TAX"
+                prop="tax"
                 :rules="[{ required: true, message: '请输入交易税比例', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.TAX"
+                  v-model="form.tax"
                   :min="0"
                   step="0.0001"
                   style="width: 100%"
@@ -125,11 +125,11 @@
             <el-col :span="8">
               <el-form-item
                 label="滑点比例"
-                prop="SLIPPAGE"
+                prop="slippage"
                 :rules="[{ required: true, message: '请输入滑点比例', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.SLIPPAGE"
+                  v-model="form.slippage"
                   :min="0"
                   step="0.00001"
                   style="width: 100%"
@@ -139,11 +139,11 @@
             <el-col :span="8">
               <el-form-item
                 label="止盈百分比"
-                prop="STOP_PROFIT"
+                prop="stop_profit"
                 :rules="[{ required: true, message: '请输入止盈百分比', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.STOP_PROFIT"
+                  v-model="form.stop_profit"
                   :min="0"
                   :max="1"
                   step="0.01"
@@ -157,11 +157,11 @@
             <el-col :span="8">
               <el-form-item
                 label="止损百分比"
-                prop="STOP_LOSS"
+                prop="stop_loss"
                 :rules="[{ required: true, message: '请输入止损百分比', trigger: 'blur' }]"
               >
                 <el-input-number
-                  v-model="form.STOP_LOSS"
+                  v-model="form.stop_loss"
                   :min="0"
                   :max="1"
                   step="0.01"
@@ -172,14 +172,15 @@
             <el-col :span="8">
               <el-form-item
                 label="股票池类型"
-                prop="STOCK_POOL_TYPE"
+                prop="stock_pool_type"
                 :rules="[{ required: true, message: '请选择股票池类型', trigger: 'change' }]"
               >
                 <el-select
-                  v-model="form.STOCK_POOL_TYPE"
+                  v-model="form.stock_pool_type"
                   placeholder="请选择股票池类型"
                   style="width: 100%"
                 >
+                  <el-option label="中证500" value="中证500"></el-option>
                   <el-option label="上证指数" value="上证指数"></el-option>
                   <el-option label="深证成指" value="深证成指"></el-option>
                   <el-option label="上证50" value="上证50"></el-option>
@@ -294,7 +295,8 @@
 
 
 <script>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted,onBeforeUnmount  } from 'vue';
+import eventBus from '@/eventBus';
 import axios from 'axios';
 import {
   ElContainer,
@@ -384,15 +386,15 @@ export default {
       unix_time: Date.now(),
       start_date: '2020-01-01',
       end_date: '2024-11-01',
-      ROTATION_DAYS: 20,
-      NUM_STOCKS: 3,
-      INITIAL_MONEY: 1000000,
-      COMMISSION: 0.00025,
-      TAX: 0.0005,
-      SLIPPAGE: 0.001,
-      STOP_PROFIT: 0.4,
-      STOP_LOSS: 0.2,
-      STOCK_POOL_TYPE: '中证500', // 这里会被更新为新选项
+      rotation_days: 20,
+      num_stocks: 3,
+      initial_money: 1000000,
+      commission: 0.00025,
+      tax: 0.0005,
+      slippage: 0.001,
+      stop_profit: 0.4,
+      stop_loss: 0.2,
+      stock_pool_type: '中证500', // 这里会被更新为新选项
 
       factor_list: [
       "brar_ar_hfq",
@@ -534,42 +536,15 @@ export default {
         loading.value = true;
         try {
           console.log('提交的表单数据:', form);
-          const response = await axios.post('/run', form);
+          const response = await axios.post('https://api.finquant.cn:8888/run', form);
           const data = response.data.data;
           // 假设返回的数据结构与描述一致
           const {
-            strategy_return,
-            strategy_return_rate,
-            benchmark_return,
-            alpha,
-            beta,
-            sharpe,
-            max_drawdown,
-            win_rate,
-            max_consecutive_gains,
-            max_consecutive_losses,
-            trade_log,
-            strategy_returns_list_rounded,
-            benchmark_returns_list_rounded,
-            dates_list,
             result_url: newResultUrl,
           } = data;
           result_url.value = newResultUrl;
           console.log('回测结果:', result_url.value);
           ///
-          // 更新表格数据
-          resultData.value = [
-            { key: '策略收益', value: strategy_return },
-            { key: '收益率', value: `${strategy_return_rate}%` },
-            { key: '基准收益', value: `${benchmark_return}%` },
-            { key: 'Alpha', value: alpha },
-            { key: 'Beta', value: beta },
-            { key: '夏普比率', value: sharpe || '无数据' },
-            { key: '最大回撤', value: `${max_drawdown}%` },
-            { key: '胜率', value: `${win_rate}%` },
-            { key: '最大连涨天数', value: `${max_consecutive_gains} 天` },
-            { key: '最大连跌天数', value: `${max_consecutive_losses} 天` },
-          ];
 
           // 更新图表数据
           // chartOption.value.xAxis.data = dates_list;
@@ -591,7 +566,18 @@ export default {
         }
       });
     };
+    // 组件挂载时监听事件
+    onMounted(() => {
+      eventBus.on('formUpdate', updateForm);
+    });
 
+    // 卸载时移除监听器，避免内存泄露
+    onBeforeUnmount(() => {
+      eventBus.off('formUpdate', updateForm);
+    });
+    function updateForm(data) {
+      Object.assign(form, data);
+    }
     const handleAsk = async () => {
       if (!question.value) {
         ElMessage({
@@ -602,7 +588,7 @@ export default {
       }
       askLoading.value = true;
       try {
-        const response = await axios.post('/ask', { question: question.value });
+        const response = await axios.post('https://api.finquant.cn:8888/ask', { question: question.value });
         const { answer, extracted_json } = response.data;
 
         // 显示 answer 文本

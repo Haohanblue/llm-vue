@@ -1,0 +1,17 @@
+<div style="display: flex; flex-direction: column; gap: 12px; background: linear-gradient(to bottom, #3d83f4, #ede7ff); height: 94vh; width: 97%; padding: 20px; border-radius: 8px; position: relative;">
+    
+
+    <!-- 对话列表 -->
+    <div
+      style="display: flex; flex-direction: column; gap: 12px; background-color: aliceblue; height: 65vh; width: 97%; padding: 20px; border-radius: 8px; overflow-y: auto;"
+      @click="handleListClick"
+      ref="listContainerRef"
+    >
+      <BubbleList :list="list" max-height="100%" />
+    </div>
+    <!-- 输入框 --> 
+    <!-- 把输入框外层 div 移到容器外部，设置 position: fixed，保持在页面底部 -->
+    <div style="position: fixed; bottom: 20px; left: 20px; right: 30px; width: calc(100% - 70px); background-color: #ffffff; padding: 10px; border-radius: 8px;">
+        <Sender ref="senderRef" v-model="senderValue" :submit-type="activeName" :loading="senderLoading" @submit="handleSubmit" />
+    </div>
+  </div>

@@ -3,7 +3,7 @@
       <!-- 第一个 section -->
     <section class="hero">
         <h1 class="main-title">
-            <div class="title-finquent">FinQuent</div>
+            <div class="title-finquent">FinQuant</div>
             <span class="vector-shape">智能金融</span>量化回测平台
         </h1>
 

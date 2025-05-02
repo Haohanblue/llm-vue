@@ -1,16 +1,16 @@
 <template>
     <!-- 原始导航栏，正常随页面滚动 -->
     <div id="navbar" ref="navbarRef" class="normal-navbar">
-      <router-link to="/">Home</router-link>
-      <router-link to="/backtest">BackTest</router-link>
-      <router-link to="/ai">AI</router-link>
+      <router-link to="/">首页</router-link>
+      <router-link to="/backtest">回测</router-link>
+      <router-link to="/ai">金融助手</router-link>
     </div>
   
     <!-- 滚动消失后显示的固定导航栏 -->
     <div v-show="showFixedNav" class="fixed-navbar">
-      <router-link to="/">Home</router-link>
-      <router-link to="/backtest">BackTest</router-link>
-      <router-link to="/ai">AI</router-link>
+      <router-link to="/">首页</router-link>
+      <router-link to="/backtest">回测</router-link>
+      <router-link to="/ai">金融助手</router-link>
     </div>
   </template>
   

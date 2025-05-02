@@ -35,7 +35,8 @@
 
 <script>
 import { ref, watch, nextTick } from 'vue';
-
+import axios from 'axios';
+import eventBus from '@/eventBus';
 export default {
   name: 'DialogComponent',
   setup(props, { expose }) {
@@ -51,7 +52,7 @@ export default {
       visible.value = true;
       // 初始化时可以添加欢迎消息
       messages.value = [
-        { role: 'assistant', content: '你好！请问有什么可以帮助你的？', type: 'text' }
+        { role: 'assistant', content: '你好！你可以描述想要的策略，我可以帮你自动生成因子公式。', type: 'text' }
       ];
     };
 
@@ -85,20 +86,41 @@ export default {
 
       const currentQuestion = question.value;
       question.value = '';
-      askLoading.value = true;
+      
       scrollToBottom();
 
       try {
         // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
+        // await new Promise(resolve => setTimeout(resolve, 1000));
+        //将messages.value转化为JSON字符串
+        askLoading.value = true;
+        const messagesStr = JSON.stringify(messages.value);
+        messages.value.push({
+          role: 'assistant',
+          content: "正在思考中...",
+          type: 'text'
+        });
+        const response = await axios.post('https://api.finquant.cn:8888/ask', { question: messagesStr });
+        const { answer, extracted_json } = response.data;
+
+        // 显示 answer 文本
+        llmAnswer.value = answer;
+
+        // 更新表单参数
+        if (extracted_json && typeof extracted_json === 'object') {
+          llmExtractedJson.value = JSON.stringify(extracted_json, null, 2);
+          eventBus.emit('formUpdate', extracted_json);
+        } else {
+          llmExtractedJson.value = '无提取的 JSON 数据';
+        }
+  
         // 模拟响应数据
-        llmAnswer.value = `这是对问题"${currentQuestion}"的回答示例...`;
-        llmExtractedJson.value = JSON.stringify({
-          question: currentQuestion,
-          answer: "示例回答",
-          timestamp: new Date().toISOString()
-        }, null, 2);
+        // llmAnswer.value = `这是对问题"${currentQuestion}"的回答示例...`;
+        // llmExtractedJson.value = JSON.stringify({
+        //   question: currentQuestion,
+        //   answer: "示例回答",
+        //   timestamp: new Date().toISOString()
+        // }, null, 2);
 
         // 添加AI回复
         messages.value.push({
@@ -114,13 +136,21 @@ export default {
             content: llmExtractedJson.value,
             type: 'json'
           });
-        }
+        }      
+        ElMessage({
+          message: '大模型已响应',
+          type: 'success',
+        });
       } catch (error) {
         console.error('调用大模型失败:', error);
         messages.value.push({
           role: 'assistant',
           content: '请求失败，请重试',
           type: 'text'
+        });
+        ElMessage({
+          message: '请求失败，请稍后再试。',
+          type: 'error',
         });
       } finally {
         askLoading.value = false;
